@@ -49,4 +49,12 @@ try {
   process.exit(1);
 }
 
+export const Utilisateur = db.Utilisateur;
+export const Encadrant = db.Encadrant;
+export const Etudiant = db.Etudiant;
+export const Forme = db.Forme;
+export const Groupe = db.Groupe;
+export const Enseigne = db.Enseigne;
+export const Filiere = db.Filiere;
+
 export default db;

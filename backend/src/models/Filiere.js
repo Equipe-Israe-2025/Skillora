@@ -7,6 +7,10 @@ export default  (sequelize, DataTypes) => {
         notEmpty: true
       }
     },
+    nbr_Etud:{type:DataTypes.INTEGER},
+    Volume_horaire:{type: DataTypes.INTEGER},
+    chef_filiere:{type: DataTypes.STRING},
+    description:{type: DataTypes.STRING},
     nom_filiere: { 
       type: DataTypes.STRING,
       allowNull: false,

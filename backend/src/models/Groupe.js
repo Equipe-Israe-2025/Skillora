@@ -35,7 +35,7 @@ export default  (sequelize, DataTypes) => {
   Groupe.associate = (models) => {
       Groupe.hasMany(models.Forme, { 
           foreignKey: 'Id_G',
-          as: 'membres'
+          as: 'groupe'
       });
   };
 

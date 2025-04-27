@@ -1,3 +1,5 @@
+import bcrypt from 'bcrypt';
+
 // fct exporte automa... par node js prend 2 param (instance de ma conn au base de donne et l objet qui indique le type d attribut )
 export default  (Sequelize,DataTypes)=>{
     // craetion du modele 
@@ -12,7 +14,7 @@ export default  (Sequelize,DataTypes)=>{
       allowNull: false
     },
     image: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING, // Stocke ici le chemin de l'image, pas l'image elle-même
       allowNull: true  // L'utilisateur peut ne pas avoir encore ajouté d'image
     },    
     prenom: {
@@ -72,6 +74,14 @@ export default  (Sequelize,DataTypes)=>{
       Utilisateur.hasOne(models.Tuteur, { foreignKey: 'Id_U' });
     }
   };
+
+  // Hook pour hacher le mot de passe avant la création ou la mise à jour d'un utilisateur
+  Utilisateur.addHook('beforeSave', async (utilisateur) => {
+    if (utilisateur.changed('password')) {
+      const hashedPassword = await bcrypt.hash(utilisateur.password, 10);
+      utilisateur.password = hashedPassword;
+    }
+  });
   
 
   return Utilisateur;

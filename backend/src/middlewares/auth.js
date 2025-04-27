@@ -1,7 +1,7 @@
 
 // middlewares/auth.js
 import jwt from 'jsonwebtoken';
-import { Utilisateur } from '../models/index.js';
+import { Utilisateur, Encadrant } from '../sync.js';
 
 export const authenticateUser = async (req, res, next) => {
   try {
@@ -26,6 +26,7 @@ export const authenticateUser = async (req, res, next) => {
     return res.status(401).json({ message: "Token invalide ou expiré" });
   }
 };
+
 
 export const authorizeRoles = (...roles) => {
   return (req, res, next) => {
