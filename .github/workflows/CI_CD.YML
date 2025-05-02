@@ -1,0 +1,94 @@
+name: Simple CI Pipeline
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: ["*"]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17.4
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: khoukahajar
+          POSTGRES_DB: projet
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Installer les dépendances backend
+        run: |
+          cd backend
+          npm install
+
+      - name: Lancer les tests backend
+        run: |
+          cd backend
+          DB_HOST=localhost DB_USER=postgres DB_PASSWORD=khoukahajar DB_NAME=projet npm test
+
+      - name: Scanner les vulnérabilités backend
+        run: |
+          cd backend
+          npm audit 
+
+  frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Installer les dépendances frontend
+        run: |
+          cd frontend
+          npm install
+
+      - name: Lancer les tests frontend
+        run: |
+          cd frontend
+          npm run test
+
+      - name: Scanner les vulnérabilités frontend
+        run: |
+          cd frontend
+          npm audit --production
+
+  docker:
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Connexion à Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build et push backend
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/app-backend ./backend
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/app-backend
+
+      - name: Build et push frontend
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/app-frontend ./frontend
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/app-frontend
