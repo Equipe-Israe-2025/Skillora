@@ -14,4 +14,4 @@ EXPOSE 3000
 # change l'utilisateur en non-root, avec moins de privilèges.
 USER node
 
-CMD [ "node","app.js" ]
+CMD [ "node","index.js" ]
