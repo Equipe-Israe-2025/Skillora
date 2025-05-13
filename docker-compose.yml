@@ -1,0 +1,57 @@
+version: '3.8'
+services:
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: express-backend
+    restart: always
+    volumes:
+      - ./backend:/app
+    environment:
+      - DB_HOST=127.0.0.1
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=khoukahajar
+      - DB_NAME=projet
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    networks:
+      - skillora-network
+
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: vue-frontend
+    restart: always
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - skillora-network
+
+  db:
+    image: postgres:17.4
+    container_name: postgres-db
+    restart: always
+    environment:
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=khoukahajar
+      - POSTGRES_DB=projet
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - skillora-network
+
+volumes:
+  pgdata:
+
+networks:
+  skillora-network: 
+    driver: bridge 
+
+
+    
