@@ -1,7 +1,8 @@
 import {
   getMoyenneParCompetence,
   getRapportParCompetence,
-} from '../services/StatistiqueService.js';
+  getMoyenneMensuelleParCompetence,
+} from '../services/StatistiqueServices.js';
 import { generatePDFReport } from '../services/pdfService.js';
 
 export const moyenneParCompetenceController = async (req, res) => {
@@ -10,8 +11,18 @@ export const moyenneParCompetenceController = async (req, res) => {
     res.status(200).json(result);
   } catch (err) {
     res.status(500).json({
+      message: 'Erreur lors du calcul de la moyenne',
       error: err.message,
     });
+  }
+};
+
+export const afficherEvolutionParCompetence = async (req, res) => {
+  try {
+    const data = await getMoyenneMensuelleParCompetence();
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors du calcul', error });
   }
 };
 

@@ -2,9 +2,9 @@ name: Simple CI Pipeline
 
 on:
   push:
-    branches: ["*"]
+    branches: [dev]
   pull_request:
-    branches: ["*"]
+    branches: [dev]
 
 jobs:
   backend:
@@ -82,13 +82,38 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build et push backend
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/dev'
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/app-backend ./backend
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/app-backend
 
       - name: Build et push frontend
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/dev'
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/app-frontend ./frontend
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/app-frontend
+
+  azure-deploy:
+    needs: docker
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Déployer sur la VM Azure via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USERNAME }}
+          key: ${{ secrets.AZURE_KEY }}
+          script: |
+            echo " Récupération de la dernière version du code"
+            sudo rm -rf skillora-deploy
+            git clone https://github.com/${{ github.repository }} skillora-deploy
+            cd skillora-deploy
+
+            echo " Déploiement avec Docker Compose"
+            docker compose down
+            docker compose pull
+            docker compose up -d --build
+
+            echo "Application déployée avec succès sur Azure VM"

@@ -351,3 +351,59 @@ export const getStudentEvaluations = async (CNE, filters = {}) => {
 
   return evaluations;
 };
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+//service pour le tuteur
+
+export const createEvaluationTuteur = async ({
+  tuteurId,
+  etudiantId,
+  competenceId,
+  note,
+  commentaire,
+}) => {
+  const existing = await Evaluation.findOne({
+    where: { tuteurId, etudiantId, competenceId },
+  });
+
+  if (existing) {
+    existing.note = note;
+    existing.commentaire = commentaire;
+    return await existing.save();
+  } else {
+    return await Evaluation.create({
+      tuteurId,
+      etudiantId,
+      competenceId,
+      note,
+      commentaire,
+    });
+  }
+};
+
+export const updateEvaluationTuteur = async ({
+  tuteurId,
+  etudiantId,
+  competenceId,
+  note,
+  commentaire,
+}) => {
+  const evaluation = await Evaluation.findOne({
+    where: { tuteurId, etudiantId, competenceId },
+  });
+
+  if (!evaluation) {
+    throw new Error('Évaluation non trouvée');
+  }
+
+  evaluation.note = note;
+  evaluation.commentaire = commentaire;
+  return await evaluation.save();
+};
+
+export const getEvaluationsByEtudiant = async (tuteurId, etudiantId) => {
+  return await Evaluation.findAll({
+    where: { tuteurId, etudiantId },
+    include: ['competence'],
+  });
+};

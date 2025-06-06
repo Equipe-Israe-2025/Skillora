@@ -7,19 +7,20 @@ import {
   deleteUtilisateur,
   updateUserProfileImage,
   loginUtilisateur, 
+  getUtilisateursParRole,
   logoutUtilisateur
 } from '../controllers/utilisateurController.js';
-import upload from '../config/multerConfig.js'; // Configuration multer
 
 import {
   authenticateUser,
-  authorizeRoles
+  authorizeRoles,
+  restrictToAdmin
 } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
 // Route pour l'upload de l'image de profil
-router.post('/upload-profile-image', upload.single('image'), updateUserProfileImage);
+//router.post('/upload-profile-image', upload.single('image'), updateUserProfileImage);
 
 //  Créer un utilisateur (seulement par un Administrateur)
 router.post('/creer', authenticateUser, authorizeRoles('Administrateur'), creerUtilisateur);
@@ -32,6 +33,8 @@ router.get('/:id', authenticateUser, getUtilisateurById);
 
 //  Modifier un utilisateur (admin ou l'utilisateur lui-même)
 router.put('/:id', authenticateUser, updateUtilisateur);
+
+router.get('/:role', restrictToAdmin, getUtilisateursParRole);
 
 // Supprimer un utilisateur (admin uniquement)
 router.delete('/:id', authenticateUser, authorizeRoles('Administrateur'), deleteUtilisateur);

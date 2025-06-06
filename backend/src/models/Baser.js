@@ -9,7 +9,7 @@ export default  (sequelize, DataTypes) => {
       }
     },
     Id_C: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       primaryKey: true,
       references: {
         model: 'Competence',

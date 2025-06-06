@@ -4,7 +4,10 @@ import {
   getEvaluationDetails,
   updateEvaluation,
   deleteEvaluation,
-  getStudentEvaluations
+  getStudentEvaluations,
+  createEvaluationTuteur,
+  updateEvaluationTuteur,
+  getEvaluationsByEtudiant
 } from '../services/EvaluationService.js';
 
 export const createEvaluationController = async (req, res) => {
@@ -58,5 +61,61 @@ export const getStudentEvaluationsController = async (req, res) => {
     res.status(200).json(evaluations);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+//////////////////////// controller tuteur
+export const createOrUpdateEvaluationByCompetence = async (req, res) => {
+  try {
+    const tuteurId = req.user.id; // depuis le token
+    const { etudiantId, competenceId } = req.params;
+    const { note, commentaire } = req.body;
+
+    const evaluation = await createEvaluationTuteur({
+      tuteurId,
+      etudiantId,
+      competenceId,
+      note,
+      commentaire,
+    });
+
+    res.status(200).json({ message: 'Évaluation enregistrée', evaluation });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
+  }
+};
+
+export const getEvaluatedCompetencesByEtudiant = async (req, res) => {
+  try {
+    const tuteurId = req.user.id;
+    const { etudiantId } = req.params;
+
+    const evaluations = await getEvaluationsByEtudiant(tuteurId, etudiantId);
+
+    res.status(200).json({ evaluations });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
+  }
+};
+
+export const updateEvaluationByCompetenceTuteur = async (req, res) => {
+  try {
+    const tuteurId = req.user.id;
+    const { etudiantId, competenceId } = req.params;
+    const { note, commentaire } = req.body;
+
+    const updated = await updateEvaluationTuteur({
+      tuteurId,
+      etudiantId,
+      competenceId,
+      note,
+      commentaire,
+    });
+
+    res
+      .status(200)
+      .json({ message: 'Évaluation modifiée', evaluation: updated });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
 };

@@ -127,6 +127,13 @@ export async function authenticateUserService({ email, password, role }) {
   return { token, user };
 }
 
+export const getUtilisateursByRole = async (role) => {
+  const utilisateurs = await Utilisateur.findAll({
+    where: { role },
+  });
+  return utilisateurs;
+};
+
 export async function logoutUserService() {
   return { message: 'Déconnexion réussie.' };
 }

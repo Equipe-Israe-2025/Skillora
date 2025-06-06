@@ -10,7 +10,7 @@ import {
   supprimerEtudiants,
   ajouterEtudiants,
   afficherEtudiantsDansGroupe,
-  afficherEtudiantsHorsGroupe,
+  //afficherEtudiantsHorsGroupe
 } from '../controllers/encadrantController.js';
 
 const router = express.Router();

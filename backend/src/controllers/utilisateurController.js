@@ -6,7 +6,8 @@ import {
     updateUtilisateurService,
     deleteUtilisateurService,
     updateUserProfileImageService,
-    authenticateUserService
+    authenticateUserService,
+    getUtilisateursByRole
   } from '../services/utilisateurService.js';
 
 
@@ -91,6 +92,23 @@ export const updateUserProfileImage = async (req, res) => {
       res.status(401).json({ message: error.message });
     }
   }
+
+  export const getUtilisateursParRole = async (req, res) => {
+  const { role } = req.params;
+
+  // Vérifie que le rôle est valide
+  const rolesValides = ['Etudiant', 'Tuteur', 'Encadrant'];
+  if (!rolesValides.includes(role)) {
+    return res.status(400).json({ message: 'Rôle invalide' });
+  }
+
+  try {
+    const utilisateurs = await getUtilisateursByRole(role);
+    res.status(200).json(utilisateurs);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
   
   
   export async function logoutUtilisateur(req, res) {
@@ -101,3 +119,5 @@ export const updateUserProfileImage = async (req, res) => {
       res.status(500).json({ message: 'Erreur lors de la déconnexion' });
     }
   }
+
+  // getUtilisateurByRole

@@ -5,8 +5,11 @@ import {
   getEvaluationDetailsController,
   updateEvaluationController,
   deleteEvaluationController,
-  getStudentEvaluationsController
-} from '../controllers/evaluationController.js';
+  getStudentEvaluationsController,
+  createOrUpdateEvaluationByCompetence,
+  getEvaluatedCompetencesByEtudiant,
+  updateEvaluationByCompetenceTuteur
+} from '../controllers/EvaluationController.js';
 
 import { authenticateUser } from '../middlewares/authMiddleware.js';
 
@@ -18,5 +21,14 @@ router.get('/:id', getEvaluationDetailsController);
 router.put('/:id', updateEvaluationController);
 router.delete('/:id', deleteEvaluationController);
 router.get('/student/:CNE', getStudentEvaluationsController);
+
+///////////////route pour tuteur
+router.get('/tuteur/:etudiantId', getEvaluatedCompetencesByEtudiant);
+router.put('/tuteur/:etudiantId/competence/:competenceId',
+  updateEvaluationByCompetenceTuteur,
+);
+router.post('/tuteur/:etudiantId/competence/:competenceId',
+  createOrUpdateEvaluationByCompetence,
+);
 
 export default router;

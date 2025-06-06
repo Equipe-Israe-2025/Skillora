@@ -2,8 +2,8 @@ import { Competence } from '../sync.js';
 import { Indicateur } from '../sync.js';
 
 export const createCompetence = async (data) => {
-  const { Id_C, nom, description } = data;
-  const competence = await Competence.create({ Id_C, nom, description });
+  const {nom, description } = data;
+  const competence = await Competence.create({ nom, description });
   return competence;
 };
 
@@ -15,7 +15,7 @@ export const getAllCompetences = async () => {
 };
 
 export const getCompetenceById = async (Id_C) => {
-  const competence = await Competence.findOne({
+  const competence = await Competence.findByPk({
     where: { Id_C },
     include: [
       {

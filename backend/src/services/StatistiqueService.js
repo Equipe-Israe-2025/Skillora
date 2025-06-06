@@ -1,97 +1,144 @@
-import { Evaluation, Indicateur, Competence, Utilisateur, Baser } from '../sync.js';
+import { Evaluation, Indicateur, Competence, Utilisateur } from '../sync.js';
 
-export const getMoyenneParCompetence = async (Id_C = null) => {
-    const evaluations = await Evaluation.findAll({
-      include: [
-        {
-          model: Baser,
-          as: 'baser',
-          include: [
-            {
-              model: Indicateur,
-              as: 'indicateur',
-              include: [
-                {
-                  model: Competence,
-                  as: 'competence',
-                },
-              ],
-            },
-          ],
-        },
-        {
-          model: Utilisateur,
-          as: 'evaluateur',
-          attributes: ['Id_U', 'role', 'taux'],
-        },
-      ],
-    });
+import { format } from 'date-fns';
 
-    const moyennes = {};
+// moyenne par competénce généralement
+export const getMoyenneParCompetence = async () => {
+  const evaluations = await Evaluation.findAll({
+    include: [
+      {
+        model: Indicateur,
+        include: [Competence],
+      },
+      {
+        model: Utilisateur,
+        attributes: ['id', 'taux'],
+      },
+    ],
+  });
 
-    for (const evaluation of evaluations) {
-      for (const baser of evaluation.baser) {
-        const competence = baser.indicateur.competence;
+  const moyennes = {};
 
-        if (Id_C && competence.Id_C !== Id_C) continue; // Filtrer par compétence
+  for (const evaluation of evaluations) {
+    const competenceId = evaluation.indicateur.competence.id;
+    const competenceNom = evaluation.indicateur.competence.nom;
+    const poids = evaluation.Utilisateur.taux; // Ex : 0.4
+    const note = evaluation.note;
 
-        const competenceId = competence.Id_C;
-        const competenceNom = competence.nom;
-        const poids = evaluation.evaluateur.taux;
-        const note = evaluation.note;
-
-        if (!moyennes[competenceId]) {
-          moyennes[competenceId] = {
-            nom: competenceNom,
-            totalNotePondérée: 0,
-            totalPoids: 0,
-          };
-        }
-
-        moyennes[competenceId].totalNotePondérée += note * poids;
-        moyennes[competenceId].totalPoids += poids;
-      }
+    if (!moyennes[competenceId]) {
+      moyennes[competenceId] = {
+        nom: competenceNom,
+        totalNotePondérée: 0,
+        totalPoids: 0,
+      };
     }
 
-    const result = [];
-    for (const id in moyennes) {
-      const m = moyennes[id];
-      result.push({
-        competenceId: id,
-        competenceNom: m.nom,
-        moyenne: (m.totalNotePondérée / m.totalPoids).toFixed(2),
+    moyennes[competenceId].totalNotePondérée += note * poids;
+    moyennes[competenceId].totalPoids += poids;
+  }
+
+  const result = [];
+  for (const id in moyennes) {
+    const m = moyennes[id];
+    result.push({
+      competenceId: id,
+      competenceNom: m.nom,
+      moyenne: (m.totalNotePondérée / m.totalPoids).toFixed(2),
+    });
+  }
+
+  return result;
+};
+
+// moyenne monsuelle pour chaque competence
+
+export const getMoyenneMensuelleParCompetence = async () => {
+  const evaluations = await Evaluation.findAll({
+    include: [
+      {
+        model: Indicateur,
+        include: [Competence],
+      },
+      {
+        model: Utilisateur,
+        attributes: ['id', 'taux'],
+      },
+    ],
+  });
+
+  const result = {};
+
+  for (const evaluation of evaluations) {
+    const competence = evaluation.indicateur.competence;
+    const competenceId = competence.id;
+    const competenceNom = competence.nom;
+
+    // Formater la date au format YYYY-MM
+    const mois = format(new Date(evaluation.createdAt), 'yyyy-MM');
+
+    const note = evaluation.note;
+    const poids = evaluation.Utilisateur.taux;
+
+    if (!result[competenceId]) {
+      result[competenceId] = {
+        nom: competenceNom,
+        evolution: {}, // regroupement par mois
+      };
+    }
+
+    if (!result[competenceId].evolution[mois]) {
+      result[competenceId].evolution[mois] = {
+        totalNotePondérée: 0,
+        totalPoids: 0,
+      };
+    }
+
+    result[competenceId].evolution[mois].totalNotePondérée += note * poids;
+    result[competenceId].evolution[mois].totalPoids += poids;
+  }
+
+  // Préparer les résultats finaux
+  const finalResult = [];
+
+  for (const id in result) {
+    const competenceData = result[id];
+    const evolutionArray = [];
+
+    for (const mois in competenceData.evolution) {
+      const e = competenceData.evolution[mois];
+      const moyenne = e.totalPoids
+        ? (e.totalNotePondérée / e.totalPoids).toFixed(2)
+        : 0;
+      evolutionArray.push({
+        mois,
+        moyenne: parseFloat(moyenne),
       });
     }
 
-    return result;
+    // Trier les mois dans l'ordre chronologique
+    evolutionArray.sort((a, b) => new Date(a.mois) - new Date(b.mois));
 
+    finalResult.push({
+      competenceId: id,
+      competenceNom: competenceData.nom,
+      evolution: evolutionArray,
+    });
+  }
+
+  return finalResult;
 };
 
-
 // Génération du rappot par competénce
-export const getRapportParCompetence = async (Id_C = null) => {
-  const basers = await Baser.findAll({
+export const getRapportParCompetence = async () => {
+  const evaluations = await Evaluation.findAll({
     include: [
       {
-        model: Evaluation,
-        as: 'Evaluation',
-        include: [
-          {
-            model: Utilisateur,
-            as: 'evaluateur',
-            attributes: ['Id_U', 'nom', 'role'],
-          },
-        ],
+        model: Indicateur,
+        include: [Competence],
       },
       {
-        model: Indicateur,
-        as: 'indicateur',
-        include: [
-          {
-            model: Competence,
-            as: 'competence',
-          },
-        ],
+        model: Utilisateur,
+        attributes: ['id', 'nom', 'role'],
       },
     ],
     order: [['createdAt', 'DESC']],
@@ -99,27 +146,20 @@ export const getRapportParCompetence = async (Id_C = null) => {
 
   const rapport = {};
 
-  for (const baser of basers) {
-    const evaluation = baser.Evaluation;
-    const competence = baser.indicateur.competence;
+  evaluations.forEach((evaluation) => {
+    const comp = evaluation.indicateur.competence;
+    if (!rapport[comp.nom]) rapport[comp.nom] = [];
 
-    if (Id_C && competence.Id_C !== Id_C) continue; // filtrer si une compétence est demandée
-
-    const competenceNom = competence.nom;
-
-    if (!rapport[competenceNom]) rapport[competenceNom] = [];
-
-    rapport[competenceNom].push({
-      indicateur: baser.indicateur.libelle,
+    rapport[comp.nom].push({
+      indicateur: evaluation.indicateur.nom,
       note: evaluation.note,
       commentaire: evaluation.commentaire,
-      evaluateur: evaluation.evaluateur.nom,
-      role: evaluation.evaluateur.role,
+      evaluateur: evaluation.Utilisateur.nom,
+      role: evaluation.Utilisateur.role,
       date: evaluation.createdAt,
     });
-  }
+  });
 
   return rapport;
 };
-
 // sigature ??
