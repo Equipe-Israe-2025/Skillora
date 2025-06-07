@@ -120,7 +120,7 @@ jobs:
 
             echo " Déploiement avec Docker Compose"
             docker compose down
-            docker compose pull
-            docker compose up -d --build
+            docker compose build
+            docker compose up -d 
 
             echo "Application déployée avec succès sur Azure VM"
