@@ -96,7 +96,7 @@ jobs:
       - name: Build et push PostgreSQL
         if: github.ref == 'refs/heads/dev'
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/app-postgres ./database
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/app-postgres ./backend
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/app-postgres
 
 
