@@ -92,6 +92,13 @@ jobs:
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/app-frontend ./frontend
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/app-frontend
+      
+      - name: Build et push PostgreSQL
+        if: github.ref == 'refs/heads/dev'
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/app-postgres ./database
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/app-postgres
+
 
   azure-deploy:
     needs: docker
