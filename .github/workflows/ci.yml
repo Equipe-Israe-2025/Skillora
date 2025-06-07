@@ -115,7 +115,7 @@ jobs:
           script: |
             echo " Récupération de la dernière version du code"
             sudo rm -rf skillora-deploy
-            git clone https://github.com/${{ github.repository }} skillora-deploy
+            git clone -b dev https://github.com/${{ github.repository }} skillora-deploy
             cd skillora-deploy
 
             echo " Déploiement avec Docker Compose"
