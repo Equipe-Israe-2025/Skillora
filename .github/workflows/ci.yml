@@ -92,12 +92,6 @@ jobs:
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/app-frontend ./frontend
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/app-frontend
-      
-      - name: Build et push PostgreSQL
-        if: github.ref == 'refs/heads/dev'
-        run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/app-postgres ./backend
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/app-postgres
 
 
   azure-deploy:
@@ -120,7 +114,7 @@ jobs:
 
             echo " Déploiement avec Docker Compose"
             docker compose down
-            docker compose build
-            docker compose up -d 
+            docker compose pull
+            docker compose up -d --build
 
             echo "Application déployée avec succès sur Azure VM"
