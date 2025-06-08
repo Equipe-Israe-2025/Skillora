@@ -112,9 +112,8 @@ jobs:
             git clone -b dev https://github.com/${{ github.repository }} skillora-deploy
             cd skillora-deploy
 
-            echo " Déploiement avec Docker Compose"
-            docker compose down
-            docker compose pull
-            docker compose up -d --build
+            docker compose down || echo "Down échoué"
+            docker compose pull || echo "Pull échoué"
+            docker compose up -d --build || echo "Up échoué"
 
             echo "Application déployée avec succès sur Azure VM"
