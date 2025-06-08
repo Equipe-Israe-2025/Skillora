@@ -109,7 +109,7 @@ jobs:
           script: |
             echo " Récupération de la dernière version du code"
             sudo rm -rf skillora-deploy
-            git clone -b dev https://github.com/${{ github.repository }} skillora-deploy
+            git clone -b dev git@github.com:Equipe-Israe-2025/Skillora.git skillora-deploy
             cd skillora-deploy
 
             docker compose down || echo "Down échoué"
